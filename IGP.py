@@ -1,45 +1,48 @@
 # import cv2, numpy, wx, os, platform
-from cv2 import imread, imwrite
+from PIL.Image import open
 from os import system as os_sys
 from platform import system as plf_sys
 from wx import App, Frame, ID_ANY, FileDialog, FD_OPEN, FD_FILE_MUST_EXIST
-from numpy import array as nparr
 
 def processImg(outputType = 0, filepath = '', BlackWriteLine = 200):
-    img = imread(filepath)
-    print('Image size:', img.shape)
-
+    img = open(filepath)
+    img = img.convert('RGB')
     newimg = []
 
     process = 0
-    for i in range(len(img)):
+    for i in range(img.width):
         newimg.append([])
-        if( i/len(img)>=process/10 ):
+        if( i/img.height>=process/10 ):
             print(process*10, '%')
             process+=1
 
 
-        for j in range(len(img[i])):
+        for j in range(img.height):
+            coord = i, j
             newimg[len(newimg)-1].append([])
             cur = 0
-            for k in range(len(img[i, j])):
-                cur += img[i, j, k]
+            r, g, b = img.getpixel(coord)
+            cur = r+g+b
             if outputType==1:
-                for k in range(3):        
-                    newimg[len(newimg)-1][ len(newimg[len(newimg)-1])-1 ].append(int(cur/3))          
+                for k in range(3):
+                    color = ta, tb, tc = int(cur/3), int(cur/3), int(cur/3)
+                    img.putpixel(coord, color)
             elif outputType==2:
                 if cur/3>BlackWriteLine:
-                    for k in range(3):        
-                        newimg[len(newimg)-1][ len(newimg[len(newimg)-1])-1 ].append(255)
+                    for k in range(3):
+                        color = ta, tb, tc = 255, 255, 255    
+                        img.putpixel(coord, color)
                 else:
                     for k in range(3):
-                        newimg[len(newimg)-1][ len(newimg[len(newimg)-1])-1 ].append(0)
+                        color = ta, tb, tc = 0, 0, 0
+                        img.putpixel(coord, color)
             
 
     print('100%')
     print('Saving Image...')
 
-    imwrite('output{}.png'.format(BlackWriteLine), nparr(newimg))
+
+    img.save('output{}.png'.format(BlackWriteLine))
 
     if plf_sys() == 'Windows':
         os_sys('start {}'.format('output{}.png'.format(BlackWriteLine)))
